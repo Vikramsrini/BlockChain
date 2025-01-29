@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Energy Trading</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #141e30, #243b55);
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button {
+            background: #00c6ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #0072ff;
+            transform: scale(1.1);
+        }
+
+        .market {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        .blockchain-container {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .blockchain-transaction {
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .transaction-header {
+            font-weight: bold;
+            color: #00c6ff;
+        }
+
+        .transaction-details {
+            color: #ddd;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile view adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            button {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+
+            .blockchain-container {
+                max-height: 200px;
+            }
+
+            .blockchain-transaction {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+
+        /* Mobile and tablet landscape view */
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 24px;
+            }
+
+            .transaction-header {
+                font-size: 14px;
+            }
+
+            .transaction-details {
+                font-size: 12px;
+            }
+
+            button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container fade-in">
+        <h2>Blockchain Energy Trading Platform</h2>
+        <p>Decentralized and Transparent Energy Trading</p>
+        <button onclick="registerProducer()">Register as Energy Producer</button>
+        <button onclick="registerConsumer()">Register as Energy Consumer</button>
+        
+        <div class="market">
+            <h3>Energy Market</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Seller</th>
+                        <th>Energy (kWh)</th>
+                        <th>Price ($/kWh)</th>
+                        <th>Buy</th>
+                    </tr>
+                </thead>
+                <tbody id="marketTable"></tbody>
+            </table>
+        </div>
+
+        <h3>Blockchain Transactions</h3>
+        <div class="blockchain-container">
+            <div id="blockchain"></div>
+        </div>
+    </div>
+
+    <script>
+        let blockchain = [];
+        let energyMarket = [];
+
+        function registerProducer() {
+            let name = prompt("Enter your name:");
+            let energy = prompt("Enter energy amount to sell (kWh):");
+            let price = prompt("Set price per kWh ($):");
+            if (name && energy && price) {
+                let transaction = { seller: name, energy: energy, price: price, id: blockchain.length + 1 };
+                blockchain.push(transaction);
+                energyMarket.push(transaction);
+                updateMarket();
+            }
+        }
+
+        function registerConsumer() {
+            let name = prompt("Enter your name:");
+            let neededEnergy = prompt("Enter total energy amount to buy (kWh):");
+            let budget = prompt("Set max price per kWh ($):");
+
+            if (name && neededEnergy && budget) {
+                let totalEnergyRequired = 0;
+                let energyPurchased = 0;
+
+                for (let i = 0; i < energyMarket.length; i++) {
+                    if (parseFloat(energyMarket[i].price) <= parseFloat(budget) && totalEnergyRequired < neededEnergy) {
+                        let energyToBuy = Math.min(parseFloat(energyMarket[i].energy), neededEnergy - totalEnergyRequired);
+                        totalEnergyRequired += energyToBuy;
+                        energyPurchased += energyToBuy;
+                        alert(`Transaction Successful! ${name} purchased ${energyToBuy} kWh from ${energyMarket[i].seller} at $${energyMarket[i].price}/kWh.`);
+                        
+                        blockchain.push({
+                            buyer: name,
+                            seller: energyMarket[i].seller,
+                            energy: energyToBuy,
+                            price: energyMarket[i].price,
+                            id: blockchain.length + 1
+                        });
+
+                        energyMarket[i].energy -= energyToBuy;
+
+                        if (energyMarket[i].energy <= 0) {
+                            energyMarket.splice(i, 1);
+                        }
+
+                        updateMarket();
+                        updateBlockchain();
+
+                        if (totalEnergyRequired >= neededEnergy) {
+                            break;
+                        }
+                    }
+                }
+
+                if (totalEnergyRequired < neededEnergy) {
+                    alert(`Unable to fulfill your entire request. You purchased ${energyPurchased} kWh, but ${neededEnergy - energyPurchased} kWh could not be bought due to available offers.`);
+                }
+            }
+        }
+
+        function updateMarket() {
+            let table = document.getElementById("marketTable");
+            table.innerHTML = "";
+            energyMarket.forEach((item, index) => {
+                let row = `<tr>
+                    <td>${item.seller}</td>
+                    <td>${item.energy}</td>
+                    <td>$${item.price}</td>
+                    <td><button onclick="buyEnergy(${index})">Buy</button></td>
+                </tr>`;
+                table.innerHTML += row;
+            });
+        }
+
+        function buyEnergy(index) {
+            let buyer = prompt("Enter your name:");
+            if (buyer) {
+                let item = energyMarket[index];
+                alert(`Transaction Successful! ${buyer} bought ${item.energy} kWh from ${item.seller} at $${item.price}/kWh.`);
+                energyMarket.splice(index, 1);
+                updateMarket();
+                updateBlockchain();
+            }
+        }
+
+        function updateBlockchain() {
+            let list = document.getElementById("blockchain");
+            list.innerHTML = "";
+            blockchain.forEach(tx => {
+                let transactionHTML = `
+                    <div class="blockchain-transaction">
+                        <div class="transaction-header">
+                            Transaction ID: #${tx.id}
+                        </div>
+                        <div class="transaction-details">
+                            ${tx.buyer ? `${tx.buyer} bought ${tx.energy} kWh from ${tx.seller} at $${tx.price}/kWh` : `${tx.seller} listed ${tx.energy} kWh at $${tx.price}/kWh`}
+                        </div>
+                    </div>
+                `;
+                list.innerHTML += transactionHTML;
+            });
+        }
+    </script>
+</body>
+</html>
